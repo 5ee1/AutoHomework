@@ -1,0 +1,27 @@
+{
+  "manifest_version": 3,
+  "name": "Homework Page Filler",
+  "version": "1.0.0",
+  "description": "Extract questions and fill reviewed answers on a selected homework page.",
+  "permissions": ["storage", "tabs", "scripting", "webNavigation"],
+  "host_permissions": [
+    "*://*.chaoxing.com/*",
+    "http://127.0.0.1:3210/*"
+  ],
+  "action": {
+    "default_title": "Homework Page Filler",
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://*.chaoxing.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle",
+      "all_frames": true,
+      "match_origin_as_fallback": true
+    }
+  ]
+}
