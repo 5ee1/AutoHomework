@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "AutoHomework",
-  "version": "1.1.0",
-  "description": "Analyze and fill supported Chaoxing homework pages with a local AI service.",
+  "version": "1.2.0",
+  "description": "Analyze and fill supported Chaoxing homework, chapter quiz, and task-point pages.",
   "permissions": ["tabs", "scripting"],
   "host_permissions": [
     "*://*.chaoxing.com/*",
@@ -11,12 +11,5 @@
   "action": {
     "default_title": "AutoHomework",
     "default_popup": "popup.html"
-  },
-  "content_scripts": [
-    {
-      "matches": ["*://*.chaoxing.com/*"],
-      "js": ["content.js"],
-      "run_at": "document_idle"
-    }
-  ]
+  }
 }
