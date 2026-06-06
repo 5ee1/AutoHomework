@@ -1,17 +1,47 @@
-# Homework Page Filler
+# 学习通作业 AI 辅助扩展
 
-Private portable package containing:
+一个面向学习通（超星）作业页面的 Edge 浏览器扩展，可提取题目、调用 AI 分析答案，并将分析结果填写到作业页面。
 
-- Edge extension
-- Local DeepSeek API service
-- Portable Node.js runtime in the release ZIP
+> AI 生成的答案不保证正确，请务必在提交前自行检查。扩展不会自动点击最终提交按钮。
 
-## Portable Use
+## 主要功能
 
-1. Download `Homework-Portable.zip` from Releases.
-2. Extract it.
-3. Replace the placeholder in `ai-server/api-key.txt` with your own DeepSeek API key.
-4. Run `start-ai.bat`.
-5. Open `edge://extensions/`, enable Developer mode, and load the `edge-extension` folder.
+- 自动提取学习通作业页面中的题目与选项
+- 调用 AI 分析题目，展示建议答案、简短理由和置信度
+- 支持单选题、多选题及学习通常见的 UEditor 填空题
+- 将确认后的答案批量填写到页面
+- 支持指定作业页面的自动提取与 AI 分析
 
-No API key, login state, or saved answers are included.
+## API 配置
+
+扩展需要使用者自行配置 API Key，发布包中不包含任何可用密钥。
+
+默认配置使用 DeepSeek API：
+
+- 接口：`https://api.deepseek.com/chat/completions`
+- 模型：`deepseek-chat`
+- 配置文件：`ai-server/config.json`
+- 密钥文件：`ai-server/api-key.txt`
+
+将 `ai-server/api-key.txt` 中的占位文字替换为自己的 DeepSeek API Key。API 调用可能产生费用，请关注服务商的计费规则。
+
+## 安装与使用
+
+1. 从 Releases 下载并解压 `Homework-Portable.zip`。
+2. 在 `ai-server/api-key.txt` 中填写自己的 DeepSeek API Key。
+3. 双击 `start-ai.bat`，使用期间保持窗口运行。
+4. 在 Edge 地址栏打开 `edge://extensions/`。
+5. 开启“开发人员模式”，点击“加载解压缩的扩展”。
+6. 选择解压目录中的 `edge-extension` 文件夹。
+7. 打开支持的学习通作业页面，点击扩展图标。
+8. 点击“AI 分析题目”，检查结果后点击“保存并立即填写”。
+9. 在最终提交前逐题检查答案。
+
+## 注意事项
+
+- AI 可能误解题目、遗漏上下文或生成错误答案。
+- 图片题、公式题、课程专属材料题的识别准确率可能较低。
+- 学习通页面结构更新后，部分题型可能暂时无法识别或填写。
+- API Key 仅应保存在自己的电脑上，请勿发送给他人或提交到 GitHub。
+- 发布包不包含账号、登录状态、历史答案或 API Key。
+- 请遵守所在组织、课程及平台的相关规则。
