@@ -59,3 +59,12 @@ button.primary {
   margin-bottom: 0;
   color: #475569;
 }
+
+.hint {
+  color: #64748b;
+}
+
+button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
