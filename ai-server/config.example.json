@@ -1,0 +1,6 @@
+{
+  "provider": "deepseek",
+  "baseUrl": "https://api.deepseek.com/chat/completions",
+  "model": "deepseek-chat",
+  "port": 3210
+}
