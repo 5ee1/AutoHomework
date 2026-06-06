@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>作业页面填写器</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <h1>作业页面填写器</h1>
+
+  <label class="switch-row">
+    <input id="enabled" type="checkbox">
+    <span>打开目标链接时自动提取并 AI 分析</span>
+  </label>
+
+  <label for="targetUrl">目标链接</label>
+  <input id="targetUrl" type="text" placeholder="当前作业链接">
+
+  <label for="answers">答案，每行对应一道题</label>
+  <textarea id="answers" rows="10" placeholder="第一题答案&#10;第二题答案&#10;多选题可写：A,B"></textarea>
+
+  <div class="buttons">
+    <button id="analyze" class="primary">AI 分析题目</button>
+    <button id="saveFill" class="primary">保存并立即填写</button>
+    <button id="extract">提取题目</button>
+    <button id="diagnose">诊断填空控件</button>
+    <button id="diagnoseChoices">诊断选择题</button>
+  </div>
+
+  <label for="analysis">AI 分析结果（请检查后再填写）</label>
+  <textarea id="analysis" rows="10" readonly placeholder="答案、理由和置信度会显示在这里"></textarea>
+  <textarea id="questions" rows="8" readonly placeholder="提取的题目会显示在这里"></textarea>
+  <p id="status">不会自动点击提交按钮。</p>
+
+  <script src="popup.js"></script>
+</body>
+</html>
