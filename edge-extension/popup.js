@@ -37,12 +37,28 @@ function similarity(left, right) {
 }
 
 async function loadBank() {
-  const data = await chrome.storage.local.get(BANK_KEY);
-  return Array.isArray(data[BANK_KEY]) ? data[BANK_KEY] : [];
+  if (chrome.storage?.local) {
+    const data = await chrome.storage.local.get(BANK_KEY);
+    if (Array.isArray(data[BANK_KEY]) && data[BANK_KEY].length) return data[BANK_KEY];
+  }
+  try {
+    const data = JSON.parse(localStorage.getItem(BANK_KEY) || "[]");
+    if (Array.isArray(data) && data.length && chrome.storage?.local) {
+      await chrome.storage.local.set({ [BANK_KEY]: data });
+    }
+    return Array.isArray(data) ? data : [];
+  } catch {
+    return [];
+  }
 }
 
 async function saveBank(bank) {
-  await chrome.storage.local.set({ [BANK_KEY]: bank });
+  if (chrome.storage?.local) {
+    await chrome.storage.local.set({ [BANK_KEY]: bank });
+  } else {
+    localStorage.setItem(BANK_KEY, JSON.stringify(bank));
+  }
+  localStorage.setItem(BANK_KEY, JSON.stringify(bank));
   bankCountBox.textContent = `${bank.length} 题`;
 }
 
