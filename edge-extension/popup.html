@@ -12,22 +12,11 @@
   <div class="buttons">
     <button id="analyze" class="primary">AI 分析题目</button>
     <button id="fill" class="primary">填写答案</button>
-    <button id="saveBank">保存本页到题库</button>
   </div>
   <label for="answers">AI 建议答案</label>
   <textarea id="answers" rows="8" placeholder="分析完成后，答案会显示在这里"></textarea>
   <label for="analysis">分析理由与置信度</label>
   <textarea id="analysis" rows="10" readonly></textarea>
-
-  <details>
-    <summary>个人题库 <span id="bankCount">0 题</span></summary>
-    <p class="hint">直接粘贴带“正确答案：”或“参考答案：”的原始内容，无需排版。</p>
-    <textarea id="bankImport" rows="8" placeholder="粘贴题目、选项和正确答案……"></textarea>
-    <div class="buttons">
-      <button id="importBank">导入粘贴内容</button>
-      <button id="exportBank">复制题库备份</button>
-    </div>
-  </details>
   <p id="status">扩展不会自动提交作业。</p>
   <script src="popup.js"></script>
 </body>
