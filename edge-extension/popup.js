@@ -83,14 +83,28 @@ function frameScanner() {
 }
 
 async function scanFrames(tabId) {
-  const executions = await chrome.scripting.executeScript({
-    target: { tabId, allFrames: true },
-    func: frameScanner
-  });
-  return executions
-    .map((execution) => ({ frameId: execution.frameId, ...execution.result }))
-    .filter((frame) => frame.questions?.length)
-    .sort((a, b) => a.frameId - b.frameId);
+  const navigationFrames = await chrome.webNavigation.getAllFrames({ tabId });
+  const scans = await Promise.all((navigationFrames || [{ frameId: 0 }]).map(async (frame) => {
+    try {
+      const [execution] = await withTimeout(chrome.scripting.executeScript({
+        target: { tabId, frameIds: [frame.frameId] },
+        func: frameScanner
+      }), 2500, `Frame ${frame.frameId}`);
+      return execution?.result
+        ? { frameId: frame.frameId, ...execution.result, skipped: false }
+        : null;
+    } catch (error) {
+      return { frameId: frame.frameId, url: frame.url, questions: [], skipped: true, error: error.message };
+    }
+  }));
+  const available = scans.filter(Boolean);
+  return {
+    frames: available
+      .filter((frame) => frame.questions?.length)
+      .sort((a, b) => a.frameId - b.frameId),
+    scanned: available.length,
+    skipped: available.filter((frame) => frame.skipped).length
+  };
 }
 
 async function requestAnalysis(questions) {
@@ -237,10 +251,11 @@ document.querySelector("#analyze").addEventListener("click", async (event) => {
   try {
     setBusy(button, true, "正在扫描当前页面及任务点……");
     const tab = await currentTab();
-    const frames = await withTimeout(scanFrames(tab.id), 20000, "Frame scan");
+    const scan = await withTimeout(scanFrames(tab.id), 15000, "Frame scan");
+    const frames = scan.frames;
     const questions = frames.flatMap((frame) => frame.questions);
     if (!questions.length) throw new Error("未识别到题目，请先打开包含测验或练习的任务点");
-    statusBox.textContent = `已在 ${frames.length} 个页面区域识别 ${questions.length} 道题，正在调用 AI……`;
+    statusBox.textContent = `已在 ${frames.length} 个页面区域识别 ${questions.length} 道题，跳过 ${scan.skipped} 个超时区域，正在调用 AI……`;
     const rows = await withTimeout(requestAnalysis(questions), 180000, "AI analysis");
     answersBox.value = rows.map((row) => row.answer).join("\n");
     analysisBox.value = rows.map((row, index) =>
@@ -259,7 +274,8 @@ document.querySelector("#fill").addEventListener("click", async (event) => {
   try {
     setBusy(button, true, "正在扫描并填写当前页面及任务点……");
     const tab = await currentTab();
-    const frames = await withTimeout(scanFrames(tab.id), 20000, "Frame scan");
+    const scan = await withTimeout(scanFrames(tab.id), 15000, "Frame scan");
+    const frames = scan.frames;
     const answers = parseAnswers();
     if (!answers.length) throw new Error("没有可填写的答案，请先分析题目");
     const result = await withTimeout(fillFrames(tab.id, frames, answers), 30000, "Fill");
