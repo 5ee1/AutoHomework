@@ -25,9 +25,47 @@ function parseModelJson(text) {
     .replace(/^```(?:json)?\s*/i, "")
     .replace(/\s*```$/, "")
     .trim();
-  const result = JSON.parse(cleaned);
-  if (!Array.isArray(result.answers)) throw new Error("Model response does not contain an answers array");
-  return result;
+  const start = cleaned.indexOf("{");
+  const end = cleaned.lastIndexOf("}");
+  const extracted = start >= 0 && end > start ? cleaned.slice(start, end + 1) : cleaned;
+  const candidates = [
+    extracted,
+    extracted
+      .replace(/[“”]/g, '"')
+      .replace(/[‘’]/g, "'")
+      .replace(/,\s*([}\]])/g, "$1")
+      .replace(/(["}\]])\s+("[A-Za-z_][^"]*"\s*:)/g, "$1,$2")
+  ];
+  let lastError;
+  for (const candidate of candidates) {
+    try {
+      const result = JSON.parse(candidate);
+      if (!Array.isArray(result.answers)) throw new Error("Model response does not contain an answers array");
+      return result;
+    } catch (error) {
+      lastError = error;
+    }
+  }
+  throw lastError;
+}
+
+async function callDeepSeek(config, apiKey, messages) {
+  const response = await fetch(config.baseUrl || "https://api.deepseek.com/chat/completions", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${apiKey}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      model: config.model || "deepseek-chat",
+      messages,
+      response_format: { type: "json_object" },
+      stream: false
+    })
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error?.message || `DeepSeek API returned ${response.status}`);
+  return data.choices?.[0]?.message?.content || "";
 }
 
 async function analyze(questions) {
@@ -50,28 +88,26 @@ async function analyze(questions) {
     "Keep every question in the original order and do not omit any question."
   ].join("\n");
 
-  const response = await fetch(config.baseUrl || "https://api.deepseek.com/chat/completions", {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${apiKey}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      model: config.model || "deepseek-chat",
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: JSON.stringify({ questions }) }
-      ],
-      response_format: { type: "json_object" },
-      stream: false
-    })
-  });
-
-  const data = await response.json();
-  if (!response.ok) {
-    throw new Error(data.error?.message || `DeepSeek API returned ${response.status}`);
+  const content = await callDeepSeek(config, apiKey, [
+    { role: "system", content: systemPrompt },
+    { role: "user", content: JSON.stringify({ questions }) }
+  ]);
+  try {
+    return parseModelJson(content);
+  } catch (firstError) {
+    const repaired = await callDeepSeek(config, apiKey, [
+      {
+        role: "system",
+        content: "Repair the supplied malformed JSON. Return valid JSON only. Preserve every answer, explanation, confidence, and index exactly; do not solve or change content."
+      },
+      { role: "user", content }
+    ]);
+    try {
+      return parseModelJson(repaired);
+    } catch {
+      throw new Error(`DeepSeek returned invalid JSON after retry: ${firstError.message}`);
+    }
   }
-  return parseModelJson(data.choices?.[0]?.message?.content);
 }
 
 const server = http.createServer((req, res) => {
