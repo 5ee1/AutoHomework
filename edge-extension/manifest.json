@@ -1,9 +1,9 @@
 {
   "manifest_version": 3,
   "name": "AutoHomework",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Analyze and fill supported Chaoxing homework, chapter quiz, and task-point pages.",
-  "permissions": ["tabs", "scripting"],
+  "permissions": ["tabs", "scripting", "webNavigation"],
   "host_permissions": [
     "*://*.chaoxing.com/*",
     "http://127.0.0.1:3210/*"
